@@ -178,7 +178,7 @@ class Karbo {
     $result = array();
     $data = $this->apiCall($args);
     $result['status'] = false;
-    print_r($data);
+    //print_r($data);
     if (!$data === false){
       if (isset($data['id'])){
         if ($data['id'] == $this->id_connection){
@@ -419,6 +419,10 @@ class Karbo {
     return false;
   }
 
+  public function setTxConf($tx_conf){
+    $this->tx_conf = $tx_conf;
+  }
+
   public function setOffsetWD($offset){
     $this->wd_offset = $offset;
   }
@@ -466,6 +470,7 @@ class Karbo {
     $result['status_txt'] = 'Unconfirmed';
     $result['amount'] = 0;
     $result['height'] = 0;
+    $result['tx_conf'] = 0;
     $result['tx_hash'] = '';
     $result['payment_id'] = '';
     $result['address'] = '';
@@ -475,12 +480,15 @@ class Karbo {
         if ($payment['status'] == true){
           if (isset($payment['payment'])){
             if (count($payment['payment']) == 1){
-              if ($service_status['height'] - $payment['payment'][0]['height'] > $this->tx_conf - 1){
+              $tx_conf_now = $service_status['height'] - $payment['payment'][0]['height'] + 1;
+              if ($tx_conf_now >= $this->tx_conf){
                 $result['status'] = true;
                 $result['status_txt'] = 'Confirmed';
+                $result['tx_conf'] = $tx_conf_now;
                 } else {
                 $result['status'] = false;
                 $result['status_txt'] = 'Unconfirmed';
+                $result['tx_conf'] = $tx_conf_now;
               }
               $result['amount'] = $payment['payment'][0]['amount'];
               $result['height'] = $payment['payment'][0]['height'];
@@ -499,8 +507,16 @@ class Karbo {
         if ($payment['status'] == true){
           if (isset($payment['transaction'])){
             if (count($payment['transaction']) == 1){
-              $result['status'] = true;
-              $result['status_txt'] = 'Confirmed';
+              $tx_conf_now = $service_status['height'] - $payment['transaction'][0]['blockIndex'];
+              if ($tx_conf_now >= $this->tx_conf){
+                $result['status'] = true;
+                $result['status_txt'] = 'Confirmed';
+                $result['tx_conf'] = $tx_conf_now;
+                } else {
+                $result['status'] = false;
+                $result['status_txt'] = 'Unconfirmed';
+                $result['tx_conf'] = $tx_conf_now;
+              }
               $result['amount'] = $payment['transaction'][0]['amount'];
               $result['height'] = $payment['transaction'][0]['blockIndex'];
               $result['tx_hash'] = $payment['transaction'][0]['transactionHash'];
