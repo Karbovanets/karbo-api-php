@@ -1,0 +1,13 @@
+{
+    "name": "karbo/karbo-api-php",
+    "description": "Libraries for working with Karbo.",
+    "type": "library",
+    "license": "ISC",
+    "authors": [],
+    "autoload": {
+        "psr-4": {
+            "Karbo\\": "src/"
+        }
+    },
+    "require": {}
+}
